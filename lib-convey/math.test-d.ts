@@ -1,4 +1,4 @@
-import type * as conveyElementAttrsTest from '@/elementAttrs.test-d.ts'
+import type * as conveyElementAttrsTest from '@/elementAttr.test-d.ts'
 import type * as conveyMath from '@/math.ts'
 
 export const url = import.meta.url

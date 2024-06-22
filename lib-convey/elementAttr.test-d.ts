@@ -1,6 +1,6 @@
 import type * as conveyData from '@/data.ts'
-import type * as conveyElementAttrsTest from '@/elementAttrs.test-d.ts'
-import type * as conveyElementAttrs from '@/elementAttrs.ts'
+import type * as conveyElementAttrsTest from '@/elementAttr.test-d.ts'
+import type * as conveyElementAttr from '@/elementAttr.ts'
 import type * as compute from '@intertwine/lib-compute'
 
 export type TestAttrs<
@@ -8,7 +8,7 @@ export type TestAttrs<
   BaseElement extends Element,
 > = Required<
   Pick<
-    conveyElementAttrs.Attrs<CustomContext, BaseElement>,
+    conveyElementAttr.Attrs<CustomContext, BaseElement>,
     'content' | 'onAdd' | 'style'
   >
 > &
@@ -16,7 +16,7 @@ export type TestAttrs<
   TestWritableAttrs<BaseElement>
 
 type TestListenerAttrs<BaseElement extends Element> = {
-  readonly [Key in keyof conveyElementAttrs.AllAttrs as Key extends (
+  readonly [Key in keyof conveyElementAttr.AllAttrs as Key extends (
     `on${infer Type}`
   ) ?
     Lowercase<Type> extends (
@@ -56,7 +56,7 @@ type TestWritableAttrs<BaseElement extends Element> = {
   : compute.NodeOpt<
       BaseElement[Key] extends boolean ? boolean
       : BaseElement[Key] extends SVGAnimatedLength ?
-        conveyData.SvgLengthOpt | null
+        conveyData.SvgLengthPctOpt | null
       : BaseElement[Key] extends SVGAnimatedNumber ? number | null
       : BaseElement[Key] extends SVGAnimatedPreserveAspectRatio ?
         conveyData.SvgPreserveAspectRatioOpt | null
@@ -135,7 +135,7 @@ export interface SkippedMap {
 }
 
 export type OverrideMap = Required<
-  conveyElementAttrs.PickAttrs<
+  conveyElementAttr.PickAttrs<
     | 'ariaAtomic'
     | 'ariaAutoComplete'
     | 'ariaBusy'

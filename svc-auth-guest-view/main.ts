@@ -5,12 +5,69 @@ import type * as random from '@intertwine/lib-random'
 import type * as stream from '@intertwine/lib-stream'
 import type * as time from '@intertwine/lib-time'
 
-const fillProperty = contrast.var_<contrast.Color>()
+const fillVar = contrast.var_<contrast.Color>()
 
 const htmlStyle = convey.defineCustom((ctx) => {
   const html = ctx.convey.document.documentElement
   return convey.portal(html, {
     style: [contrast.boxSizing('border-box')],
+  })
+})
+
+const gridColorVar = contrast.var_<contrast.Color>()
+
+const bodyStyle = convey.defineCustom((ctx) => {
+  const body = ctx.convey.document.body
+  const transparent = contrast.rgb(
+    contrast.pct(0),
+    contrast.pct(0),
+    contrast.pct(0),
+    contrast.pct(0),
+  )
+  return convey.portal(body, {
+    style: [
+      contrast.overflow.x('hidden'),
+      contrast.position('relative'),
+      contrast.padding.oi(contrast.rlh(2)),
+      contrast.size.min.h(contrast.length(100, 'dvh')),
+      gridColorVar.set(
+        contrast.lightDark(
+          contrast.hsl(
+            contrast.deg(240),
+            contrast.pct(100),
+            contrast.pct(36),
+            contrast.pct(5),
+          ),
+          contrast.hsl(
+            contrast.deg(240),
+            contrast.pct(100),
+            contrast.pct(70),
+            contrast.pct(20),
+          ),
+        ),
+      ),
+
+      contrast.after([
+        contrast.background.image(
+          contrast.gradient.linear(
+            contrast.deg(0),
+            [gridColorVar.get(), contrast.px(1)],
+            [transparent, contrast.px(1)],
+          ),
+          contrast.gradient.linear(
+            contrast.deg(90),
+            [gridColorVar.get(), contrast.px(1)],
+            [transparent, contrast.px(1)],
+          ),
+        ),
+        contrast.background.size([contrast.rlh(0.5), contrast.rlh(0.5)]),
+        contrast.content(contrast.stringLiteral('')),
+        contrast.inset.oi(contrast.rlh(0)),
+        contrast.isolation('isolate'),
+        contrast.pointer.events('none'),
+        contrast.position('absolute'),
+      ]),
+    ],
   })
 })
 
@@ -36,32 +93,68 @@ const custom = convey.defineCustom<
     convey.html.div({
       content: [
         convey.html.h1({
+          style: [contrast.margin.oe(contrast.rlh(1))],
+
           content: 'The Tale of Peter Rabbit by Beatrix Potter',
         }),
         convey.html.h2({
+          style: [contrast.margin.oe(contrast.rlh(0.5))],
+
           content: 'Chapter 1',
         }),
         convey.html.p({
+          style: [contrast.margin.oe(contrast.rlh(0.5))],
+
           content:
             'Once upon a time there were four little Rabbits, and their names were— Flopsy, Mopsy, Cotton-tail, and Peter.',
         }),
         convey.html.p({
+          style: [contrast.margin.oe(contrast.rlh(0.5))],
+
           content:
             'They lived with their Mother in a sand-bank, underneath the root of a very big fir-tree.',
         }),
         convey.html.p({
+          style: [contrast.margin.oe(contrast.rlh(0.5))],
+
           content:
             "'Now, my dears,' said old Mrs. Rabbit one morning, 'you may go into the fields or down the lane, but don't go into Mr. McGregor's garden.'",
         }),
       ],
     }),
-    convey.html.hr({}),
+    convey.html.hr({
+      style: [
+        contrast.border.style.oi('none'),
+        contrast.border.style.oe('solid'),
+        contrast.border.color.oe(
+          contrast.lightDark(
+            contrast.rgb(
+              contrast.pct(0),
+              contrast.pct(0),
+              contrast.pct(0),
+              contrast.pct(100),
+            ),
+            contrast.rgb(
+              contrast.pct(100),
+              contrast.pct(100),
+              contrast.pct(100),
+              contrast.pct(100),
+            ),
+          ),
+        ),
+        contrast.border.width.oe(contrast.px(1)),
+        contrast.margin.os(contrast.rlh(3)),
+        contrast.margin.oe(
+          contrast.sub<contrast.Length>(contrast.rlh(3), contrast.px(1)),
+        ),
+      ],
+    }),
     convey.html.div({
       style: compute.map(
         (count) => [
-          contrast.background.color(
-            count % 2 ? contrast.rgb(225, 225, 225) : null,
-          ),
+          count % 2 ?
+            contrast.background.color('rgb(225, 225, 225)')
+          : null,
         ],
         countState,
       ),
@@ -78,10 +171,12 @@ const custom = convey.defineCustom<
     }),
     convey.svg.svg({
       style: [
-        fillProperty.set([
-          contrast.rgb(200, 200, 255),
-          contrast.hover(contrast.rgb(0, 0, 255)),
-        ]),
+        fillVar.set(
+          contrast.c(
+            'rgb(200, 200, 255)',
+            contrast.hover('rgb(0, 0, 255)'),
+          ),
+        ),
       ],
 
       height: 50,
@@ -89,7 +184,7 @@ const custom = convey.defineCustom<
       width: 50,
 
       content: convey.svg.rect({
-        style: [contrast.fill(fillProperty.get())],
+        style: [contrast.fill(fillVar.get())],
 
         height: 80,
         width: 80,
@@ -100,7 +195,12 @@ const custom = convey.defineCustom<
     convey.math.math({
       style: [
         contrast.background.color(
-          contrast.rgb(255, 200, [255, contrast.hover(0)]),
+          contrast.rgb(
+            contrast.pct(100),
+            contrast.pct(75),
+            contrast.c(contrast.pct(100), contrast.hover(contrast.pct(0))),
+            contrast.pct(100),
+          ),
         ),
       ],
 
@@ -143,9 +243,14 @@ export async function main(
     )
     void clientSource.send(ctx, 'ping')
 
-    const fragment = custom({ title: 'st hello' })
     await convey
-      .portal(body, { content: [htmlStyle({}), fragment] })
+      .portal(body, {
+        content: [
+          htmlStyle({}),
+          bodyStyle({}),
+          custom({ title: 'st hello' }),
+        ],
+      })
       .add(ctx)
   } catch (error) {
     // eslint-disable-next-line no-console

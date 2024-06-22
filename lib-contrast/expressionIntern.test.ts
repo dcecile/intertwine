@@ -5,33 +5,24 @@ import * as test from '@intertwine/lib-test'
 export const url = import.meta.url
 
 export const tests = {
-  async ['null'](ctx: contrast.Context): Promise<void> {
-    const style = [contrast.background.color(null)]
-    const result = await contrastTest.testCompile(ctx, style)
-
-    test.assertDeepEquals(result.classNames, ['a0'])
-    test.assertDeepEquals(result.code, [
-      contrastTest.dedent(`
-        .a0 {
-        }
-      `),
-    ])
-  },
-
   async ['multi semicolon complex'](ctx: contrast.Context): Promise<void> {
     const style = [
-      contrast.background.color([
-        contrast.rgb(0, 0, 0),
-        [contrast.rgb(0, 0, 1), contrast.rgb(0, 0, 2)],
-        contrast.rgb(0, 0, 3),
-        contrast.hover([
-          contrast.rgb(0, 0, 4),
-          [contrast.rgb(0, 0, 5), contrast.rgb(0, 0, 6)],
-          contrast.rgb(0, 0, 7),
-        ]),
-        contrast.rgb(0, 0, 8),
-        contrast.rgb(0, 0, 9),
-      ]),
+      contrast.background.color(
+        contrast.c(
+          'rgb(0, 0, 0)',
+          contrast.c('rgb(0, 0, 1)', 'rgb(0, 0, 2)'),
+          'rgb(0, 0, 3)',
+          contrast.hover(
+            contrast.c(
+              'rgb(0, 0, 4)',
+              contrast.c('rgb(0, 0, 5)', 'rgb(0, 0, 6)'),
+              'rgb(0, 0, 7)',
+            ),
+          ),
+          'rgb(0, 0, 8)',
+          'rgb(0, 0, 9)',
+        ),
+      ),
     ]
     const result = await contrastTest.testCompile(ctx, style)
 
@@ -62,9 +53,10 @@ export const tests = {
     const style = [
       contrast.background.color(
         contrast.rgb(
-          0,
-          [0, contrast.hover(255)],
-          [0, contrast.hover(255)],
+          contrast.pct(0),
+          contrast.c(contrast.pct(0), contrast.hover(contrast.pct(1))),
+          contrast.c(contrast.pct(0), contrast.hover(contrast.pct(1))),
+          contrast.pct(100),
         ),
       ),
     ]
@@ -74,15 +66,15 @@ export const tests = {
     test.assertDeepEquals(result.code, [
       contrastTest.dedent(`
         .e0 {
-          --e0: 0;
+          --e0: 0%;
           &:where(:hover) {
-            --e0: 255;
+            --e0: 1%;
           }
         }
       `),
       contrastTest.dedent(`
         .a0 {
-          background-color: rgb(0, var(--e0), var(--e0));
+          background-color: rgb(0% var(--e0) var(--e0) / 100%);
         }
       `),
     ])
@@ -93,10 +85,23 @@ export const tests = {
   ): Promise<void> {
     const style = [
       contrast.background.color(
-        contrast.rgb(0, 0, [
-          0,
-          contrast.hover(contrast.add(1, [0, contrast.disabled(2)])),
-        ]),
+        contrast.rgb(
+          contrast.pct(0),
+          contrast.pct(0),
+          contrast.c(
+            contrast.pct(0),
+            contrast.hover(
+              contrast.add(
+                contrast.pct(1),
+                contrast.c(
+                  contrast.pct(0),
+                  contrast.disabled(contrast.pct(2)),
+                ),
+              ),
+            ),
+          ),
+          contrast.pct(100),
+        ),
       ),
     ]
     const result = await contrastTest.testCompile(ctx, style)
@@ -105,23 +110,23 @@ export const tests = {
     test.assertDeepEquals(result.code, [
       contrastTest.dedent(`
         .e0 {
-          --e0: 0;
+          --e0: 0%;
           &:where(:disabled) {
-            --e0: 2;
+            --e0: 2%;
           }
         }
       `),
       contrastTest.dedent(`
         .e1 {
-          --e1: 0;
+          --e1: 0%;
           &:where(:hover) {
-            --e1: calc(1+var(--e0));
+            --e1: calc(1% + var(--e0));
           }
         }
       `),
       contrastTest.dedent(`
         .a0 {
-          background-color: rgb(0, 0, var(--e1));
+          background-color: rgb(0% 0% var(--e1) / 100%);
         }
       `),
     ])
