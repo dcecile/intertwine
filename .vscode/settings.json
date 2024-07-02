@@ -43,6 +43,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
+  "editor.defaultColorDecorators": true,
   "editor.detectIndentation": false,
   "editor.formatOnPaste": false,
   "editor.formatOnSave": false,

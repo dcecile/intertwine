@@ -3,6 +3,9 @@ import type * as contrastExpression from '@/expression.ts'
 
 export const font = {
   variant: {
+    /**
+     * @see https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant-ligatures
+     */
     ligatures(
       value: contrastExpression.ExpressionOpt<
         | 'common-ligatures'

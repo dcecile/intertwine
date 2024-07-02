@@ -7,7 +7,7 @@ export const url = import.meta.url
 export const tests = {
   async ['compile basic'](ctx: contrast.Context): Promise<void> {
     for (let i = 0; i < 2; i += 1) {
-      const style = [contrast.background.color(contrast.rgb(255, 0, 0))]
+      const style = [contrast.background.color('rgb(255, 0, 0)')]
       const result = await contrastTest.testCompile(ctx, style)
 
       test.assertDeepEquals(result.classNames, ['a0'])
@@ -23,8 +23,8 @@ export const tests = {
 
   async ['atom override'](ctx: contrast.Context): Promise<void> {
     const style = [
-      contrast.background.color(contrast.rgb(0, 0, 1)),
-      contrast.background.color(contrast.rgb(0, 0, 2)),
+      contrast.background.color('rgb(0, 0, 1)'),
+      contrast.background.color('rgb(0, 0, 2)'),
     ]
     const result = await contrastTest.testCompile(ctx, style)
 
@@ -38,11 +38,39 @@ export const tests = {
     ])
   },
 
+  async ['atom pseudo-element override'](
+    ctx: contrast.Context,
+  ): Promise<void> {
+    const style = [
+      contrast.background.color('rgb(0, 0, 1)'),
+      contrast.background.color('rgb(0, 0, 2)'),
+      contrast.before([
+        contrast.background.color('rgb(0, 0, 3)'),
+        contrast.background.color('rgb(0, 0, 4)'),
+      ]),
+    ]
+    const result = await contrastTest.testCompile(ctx, style)
+
+    test.assertDeepEquals(result.classNames, ['a0', 'a1'])
+    test.assertDeepEquals(result.code, [
+      contrastTest.dedent(`
+        .a0 {
+          background-color: rgb(0, 0, 2);
+        }
+      `),
+      contrastTest.dedent(`
+        .a1::before {
+          background-color: rgb(0, 0, 4);
+        }
+      `),
+    ])
+  },
+
   async ['atom nesting'](ctx: contrast.Context): Promise<void> {
     const style = [
       [
-        contrast.fill(contrast.rgb(0, 0, 1)),
-        contrast.background.color(contrast.rgb(0, 0, 2)),
+        contrast.fill('rgb(0, 0, 1)'),
+        contrast.background.color('rgb(0, 0, 2)'),
       ],
     ]
     const result = await contrastTest.testCompile(ctx, style)

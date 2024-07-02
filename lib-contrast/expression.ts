@@ -1,11 +1,7 @@
 import type * as contrastContext from '@/context.ts'
 import * as contrastExpressionIntern from '@/expressionIntern.ts'
 
-export type ExpressionOpt<Value> =
-  | Expression<Value>
-  | readonly ExpressionOpt<Value>[]
-  | (Value extends symbol ? never : Value)
-  | null
+export type ExpressionOpt<Value> = Expression<Value> | Value
 
 export const expressionMarker = Symbol('expressionMarker')
 export const expressionValueMarker = Symbol('internValueMarker')
@@ -95,32 +91,39 @@ export function compile<Value>(
   return toExpression(expr).compile(ctx)
 }
 
-export function compileToPure<Value>(
+export function compileAllToPure<
+  Exprs extends readonly ExpressionOpt<unknown>[],
+>(
   ctx: contrastContext.Context,
-  expr: ExpressionOpt<Value>,
-): contrastExpressionIntern.PureExpressionIntern {
-  return compile(ctx, expr).toPure(ctx)
+  ...exprs: Exprs
+): {
+  readonly [K in keyof Exprs]: K extends 'length' ? Exprs[K]
+  : contrastExpressionIntern.PureExpressionIntern
+} {
+  return exprs.map((expr) => compile(ctx, expr).toPure(ctx)) as {
+    readonly [K in keyof Exprs]: K extends 'length' ? Exprs[K]
+    : contrastExpressionIntern.PureExpressionIntern
+  }
+}
+
+export function c<Value>(
+  value: ExpressionOpt<Value>,
+  ...values: readonly ExpressionOpt<Value>[]
+): Expression<Value> {
+  return expression(contrastExpressionIntern.compileCascade, (ctx) =>
+    [value, ...values].map((item) => compile(ctx, item)),
+  )
 }
 
 export function toExpression<Value>(
   expr: ExpressionOpt<Value>,
 ): Expression<Value> {
-  if (typeof expr === 'object') {
-    if (expr === null) {
-      return expression(
-        contrastExpressionIntern.compileMulti,
-        () => [] as const,
-      ) as never
-    } else if (Array.isArray(expr)) {
-      return expression(contrastExpressionIntern.compileMulti, (ctx) =>
-        expr.map((item) => compile(ctx, item)),
-      ) as never
-    } else if (isExpression<Value>(expr)) {
-      return expr
-    }
+  if (typeof expr === 'object' && isExpression<Value>(expr)) {
+    return expr
+  } else {
+    return expression(
+      contrastExpressionIntern.compilePure,
+      () => [expr] as const,
+    )
   }
-  return expression(
-    contrastExpressionIntern.compilePure,
-    () => [expr] as const,
-  ) as never
 }
