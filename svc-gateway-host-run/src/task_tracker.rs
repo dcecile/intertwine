@@ -1,5 +1,9 @@
+use crate::context as svc_context;
+use crate::state::Context as _;
+use crate::state::StateExt;
 use hyper::rt::Executor as HyperExecutor;
 use std::future::Future;
+use std::sync::Arc;
 use std::thread;
 use std::thread::JoinHandle as StdJoinHandle;
 use tokio_util::task::TaskTracker;
@@ -30,12 +34,17 @@ impl TaskTrackerExt for TaskTracker {
 
 #[derive(Clone)]
 pub struct TaskTrackerExecutor {
+  pub ctx: Arc<svc_context::ContextImpl>,
   pub task_tracker: TaskTracker,
 }
 
 impl TaskTrackerExecutor {
-  pub fn new(task_tracker: &TaskTracker) -> Self {
+  pub fn new(
+    ctx: Arc<svc_context::ContextImpl>,
+    task_tracker: &TaskTracker,
+  ) -> Self {
     TaskTrackerExecutor {
+      ctx,
       task_tracker: task_tracker.clone(),
     }
   }
@@ -47,6 +56,9 @@ where
   F::Output: Send + 'static,
 {
   fn execute(&self, future: F) {
-    self.task_tracker.spawn(future);
+    let ctx = self.ctx.clone();
+    self.task_tracker.spawn(async move {
+      ctx.state().scope_response_stream(future).await;
+    });
   }
 }
