@@ -116,8 +116,10 @@ async fn serve_http2(
     let ctx = ctx.clone();
     async move { svc_handle::handle(ctx.as_ref(), req).await }
   });
-  let executor =
-    svc_task_tracker::TaskTrackerExecutor::new(&request_task_tracker);
+  let executor = svc_task_tracker::TaskTrackerExecutor::new(
+    ctx.clone(),
+    &request_task_tracker,
+  );
   let connection_result = http2::Builder::new(executor)
     .serve_connection(tcp_io, service)
     .await;

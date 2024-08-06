@@ -25,7 +25,7 @@ pub enum Directive {
 impl Directive {
   fn to_str(self) -> &'static str {
     match self {
-      Self::DefaultSourceSelf => "default-src 'self'",
+      Self::DefaultSourceSelf => "default-src 'self' https://httpbin.org",
       Self::ImageSourceSelfData => "img-src 'self' data:",
       Self::StyleSourceSelfUnsafeInline => {
         "style-src 'self' 'unsafe-inline'"

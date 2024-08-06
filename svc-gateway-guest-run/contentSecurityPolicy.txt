@@ -1,1 +1,1 @@
-default-src 'self';img-src 'self' data:;style-src 'self' 'unsafe-inline'
+default-src 'self' https://httpbin.org;img-src 'self' data:;style-src 'self' 'unsafe-inline'

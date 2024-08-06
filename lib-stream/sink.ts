@@ -26,7 +26,7 @@ export class Sink<T> {
     return sink
   }
 
-  async write(data: T): Promise<void> {
+  private async write(data: T): Promise<void> {
     const current = Promise.resolve(this.onData(data)).finally(() =>
       this.mutableActive.delete(current),
     )
